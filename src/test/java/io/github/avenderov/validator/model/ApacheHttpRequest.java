@@ -19,6 +19,8 @@ public final class ApacheHttpRequest {
             builder.withHeader(header.getName(), header.getValue());
         }
 
+        // TODO: support query parameters
+
         return builder.build();
     }
 }
