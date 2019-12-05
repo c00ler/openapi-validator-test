@@ -1,6 +1,7 @@
 package io.github.avenderov.server;
 
 import com.atlassian.oai.validator.OpenApiInteractionValidator;
+import com.atlassian.oai.validator.report.SimpleValidationReportFormat;
 import com.atlassian.oai.validator.report.ValidationReport;
 import io.github.avenderov.utils.PortUtils;
 import io.github.avenderov.validator.adapter.ApacheHttpRequest;
@@ -46,10 +47,8 @@ class GetUserByIdTest {
     void shouldGetUserById() throws IOException {
         final var request = getUserWithId(999);
         try (final var response = httpClient.execute(request)) {
-            final var validationResult =
-                validator.validate(new ApacheHttpRequest(request), new ApacheHttpResponse(response));
-
-            assertThat(validationResult.hasErrors()).isFalse();
+            throwIfValidationErrors(
+                validator.validate(new ApacheHttpRequest(request), new ApacheHttpResponse(response)));
             assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
         }
     }
@@ -58,10 +57,10 @@ class GetUserByIdTest {
     void shouldThrowIfNoEmailInTheResponse() throws IOException {
         final var request = getUserWithId(1000);
         try (final var response = httpClient.execute(request)) {
-            final var validationResult =
+            final var validationReport =
                 validator.validate(new ApacheHttpRequest(request), new ApacheHttpResponse(response));
 
-            assertThat(validationResult.getMessages().stream().map(ValidationReport.Message::getMessage))
+            assertThat(validationReport.getMessages().stream().map(ValidationReport.Message::getMessage))
                 .containsOnly("Object has missing required properties ([\"email\"])");
         }
     }
@@ -70,10 +69,10 @@ class GetUserByIdTest {
     void shouldThrowIfUserIdIsNotInt() throws IOException {
         final var request = getUserWithId("test");
         try (final var response = httpClient.execute(request)) {
-            final var validationResult =
+            final var validationReport =
                 validator.validate(new ApacheHttpRequest(request), new ApacheHttpResponse(response));
 
-            assertThat(validationResult.getMessages().stream().map(ValidationReport.Message::getMessage))
+            assertThat(validationReport.getMessages().stream().map(ValidationReport.Message::getMessage))
                 .contains("Instance type (string) does not match any allowed primitive type (allowed: [\"integer\"])");
         }
     }
@@ -84,5 +83,11 @@ class GetUserByIdTest {
 
     private static HttpUriRequest getUserWithId(final String id) {
         return new HttpGet(String.format("http://localhost:%d/users/%s", PORT, id));
+    }
+
+    private static void throwIfValidationErrors(final ValidationReport validationReport) {
+        if (validationReport.hasErrors()) {
+            throw new IllegalStateException(SimpleValidationReportFormat.getInstance().apply(validationReport));
+        }
     }
 }
