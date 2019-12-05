@@ -3,8 +3,8 @@ package io.github.avenderov.server;
 import com.atlassian.oai.validator.OpenApiInteractionValidator;
 import com.atlassian.oai.validator.report.ValidationReport;
 import io.github.avenderov.utils.PortUtils;
-import io.github.avenderov.validator.model.ApacheHttpRequest;
-import io.github.avenderov.validator.model.ApacheHttpResponse;
+import io.github.avenderov.validator.adapter.ApacheHttpRequest;
+import io.github.avenderov.validator.adapter.ApacheHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -47,7 +47,7 @@ class GetUserByIdTest {
         final var request = getUserWithId(999);
         try (final var response = httpClient.execute(request)) {
             final var validationResult =
-                validator.validate(ApacheHttpRequest.of(request), ApacheHttpResponse.of(response));
+                validator.validate(new ApacheHttpRequest(request), new ApacheHttpResponse(response));
 
             assertThat(validationResult.hasErrors()).isFalse();
             assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
@@ -59,7 +59,7 @@ class GetUserByIdTest {
         final var request = getUserWithId(1000);
         try (final var response = httpClient.execute(request)) {
             final var validationResult =
-                validator.validate(ApacheHttpRequest.of(request), ApacheHttpResponse.of(response));
+                validator.validate(new ApacheHttpRequest(request), new ApacheHttpResponse(response));
 
             assertThat(validationResult.getMessages().stream().map(ValidationReport.Message::getMessage))
                 .containsOnly("Object has missing required properties ([\"email\"])");
@@ -71,7 +71,7 @@ class GetUserByIdTest {
         final var request = getUserWithId("test");
         try (final var response = httpClient.execute(request)) {
             final var validationResult =
-                validator.validate(ApacheHttpRequest.of(request), ApacheHttpResponse.of(response));
+                validator.validate(new ApacheHttpRequest(request), new ApacheHttpResponse(response));
 
             assertThat(validationResult.getMessages().stream().map(ValidationReport.Message::getMessage))
                 .contains("Instance type (string) does not match any allowed primitive type (allowed: [\"integer\"])");
