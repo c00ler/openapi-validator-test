@@ -1,0 +1,27 @@
+plugins {
+    id 'java'
+}
+
+group 'io.github.avenderov'
+version '1.0.0-SNAPSHOT'
+
+ext {
+    junitVersion = '5.5.2'
+}
+
+sourceCompatibility = 11
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation "org.junit.jupiter:junit-jupiter:${junitVersion}"
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
