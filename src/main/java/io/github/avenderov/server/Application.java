@@ -24,6 +24,7 @@ public final class Application {
 
     void run() {
         app.get("/users/1", this::getUserHandler);
+        app.get("/users/2", this::getUserWithoutEmailHandler);
         app.start(port);
     }
 
@@ -37,5 +38,12 @@ public final class Application {
                 .put("firstName", "John")
                 .put("lastName", "Doe")
                 .put("email", "john.doe@mail.com"));
+    }
+
+    private void getUserWithoutEmailHandler(final Context ctx) {
+        ctx.json(
+            mapper.createObjectNode()
+                .put("firstName", "John")
+                .put("lastName", "Doe"));
     }
 }
