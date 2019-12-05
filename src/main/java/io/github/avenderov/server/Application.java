@@ -23,8 +23,8 @@ public final class Application {
     }
 
     void run() {
-        app.get("/users/1", this::getUserHandler);
-        app.get("/users/2", this::getUserWithoutEmailHandler);
+        app.get("/users/999", this::getUserHandler);
+        app.get("/users/1000", this::getUserWithoutEmailHandler);
         app.start(port);
     }
 

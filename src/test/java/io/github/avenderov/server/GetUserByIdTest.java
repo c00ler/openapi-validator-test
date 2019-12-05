@@ -2,9 +2,11 @@ package io.github.avenderov.server;
 
 import com.atlassian.oai.validator.OpenApiInteractionValidator;
 import com.atlassian.oai.validator.report.ValidationReport;
+import io.github.avenderov.utils.PortUtils;
 import io.github.avenderov.validator.model.ApacheHttpRequest;
 import io.github.avenderov.validator.model.ApacheHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.junit.jupiter.api.AfterAll;
@@ -17,6 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class GetUserByIdTest {
 
+    private static final int PORT = PortUtils.randomFreePort();
+
     private static Application application;
 
     private static CloseableHttpClient httpClient;
@@ -26,7 +30,7 @@ class GetUserByIdTest {
 
     @BeforeAll
     static void beforeAll() {
-        application = new Application(7000);
+        application = new Application(PORT);
         application.run();
 
         httpClient = HttpClients.createDefault();
@@ -40,7 +44,7 @@ class GetUserByIdTest {
 
     @Test
     void shouldGetUserById() throws IOException {
-        final var request = new HttpGet("http://localhost:7000/users/1");
+        final var request = getUserWithId(999);
         try (final var response = httpClient.execute(request)) {
             final var validationResult =
                 validator.validate(ApacheHttpRequest.of(request), ApacheHttpResponse.of(response));
@@ -52,7 +56,7 @@ class GetUserByIdTest {
 
     @Test
     void shouldThrowIfNoEmailInTheResponse() throws IOException {
-        final var request = new HttpGet("http://localhost:7000/users/2");
+        final var request = getUserWithId(1000);
         try (final var response = httpClient.execute(request)) {
             final var validationResult =
                 validator.validate(ApacheHttpRequest.of(request), ApacheHttpResponse.of(response));
@@ -60,5 +64,25 @@ class GetUserByIdTest {
             assertThat(validationResult.getMessages().stream().map(ValidationReport.Message::getMessage))
                 .containsOnly("Object has missing required properties ([\"email\"])");
         }
+    }
+
+    @Test
+    void shouldThrowIfUserIdIsNotInt() throws IOException {
+        final var request = getUserWithId("test");
+        try (final var response = httpClient.execute(request)) {
+            final var validationResult =
+                validator.validate(ApacheHttpRequest.of(request), ApacheHttpResponse.of(response));
+
+            assertThat(validationResult.getMessages().stream().map(ValidationReport.Message::getMessage))
+                .contains("Instance type (string) does not match any allowed primitive type (allowed: [\"integer\"])");
+        }
+    }
+
+    private static HttpUriRequest getUserWithId(final int id) {
+        return getUserWithId(Integer.toString(id));
+    }
+
+    private static HttpUriRequest getUserWithId(final String id) {
+        return new HttpGet(String.format("http://localhost:%d/users/%s", PORT, id));
     }
 }
