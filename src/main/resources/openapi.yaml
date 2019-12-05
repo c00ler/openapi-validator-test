@@ -1,0 +1,50 @@
+openapi: 3.0.2
+info:
+  title: User API
+  description: API to manage users.
+  version: 1.0.0
+servers:
+  - url: 'http://localhost:{port}'
+    variables:
+      port:
+        enum:
+          - '7000'
+        default: '7000'
+
+paths:
+  /users/{userId}:
+    get:
+      operationId: getUserById
+      summary: Find user by ID
+      description: Returns user based on ID
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user to use
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Returns user for the provided ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
