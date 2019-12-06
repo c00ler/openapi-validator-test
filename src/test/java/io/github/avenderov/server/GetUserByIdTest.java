@@ -22,12 +22,12 @@ class GetUserByIdTest {
 
     private static final int PORT = PortUtils.randomFreePort();
 
+    private static final OpenApiInteractionValidator VALIDATOR =
+        OpenApiInteractionValidator.createFor("openapi.yaml").build();
+
     private static Application application;
 
     private static CloseableHttpClient httpClient;
-
-    private final OpenApiInteractionValidator validator =
-        OpenApiInteractionValidator.createFor("openapi.yaml").build();
 
     @BeforeAll
     static void beforeAll() {
@@ -48,7 +48,7 @@ class GetUserByIdTest {
         final var request = getUserWithId(999);
         try (final var response = httpClient.execute(request)) {
             throwIfValidationErrors(
-                validator.validate(new ApacheHttpRequest(request), new ApacheHttpResponse(response)));
+                VALIDATOR.validate(new ApacheHttpRequest(request), new ApacheHttpResponse(response)));
             assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
         }
     }
@@ -58,7 +58,7 @@ class GetUserByIdTest {
         final var request = getUserWithId(1000);
         try (final var response = httpClient.execute(request)) {
             final var validationReport =
-                validator.validate(new ApacheHttpRequest(request), new ApacheHttpResponse(response));
+                VALIDATOR.validate(new ApacheHttpRequest(request), new ApacheHttpResponse(response));
 
             assertThat(validationReport.getMessages().stream().map(ValidationReport.Message::getMessage))
                 .containsOnly("Object has missing required properties ([\"email\"])");
@@ -70,7 +70,7 @@ class GetUserByIdTest {
         final var request = getUserWithId("test");
         try (final var response = httpClient.execute(request)) {
             final var validationReport =
-                validator.validate(new ApacheHttpRequest(request), new ApacheHttpResponse(response));
+                VALIDATOR.validate(new ApacheHttpRequest(request), new ApacheHttpResponse(response));
 
             assertThat(validationReport.getMessages().stream().map(ValidationReport.Message::getMessage))
                 .contains("Instance type (string) does not match any allowed primitive type (allowed: [\"integer\"])");

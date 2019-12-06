@@ -1,0 +1,4 @@
+components:
+  schemas:
+    User:
+      $ref: 'models/user.yaml'

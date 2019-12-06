@@ -31,20 +31,4 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
-
-components:
-  schemas:
-    User:
-      type: object
-      required:
-        - firstName
-        - lastName
-        - email
-      properties:
-        firstName:
-          type: string
-        lastName:
-          type: string
-        email:
-          type: string
+                $ref: 'components.yaml#/components/schemas/User'
