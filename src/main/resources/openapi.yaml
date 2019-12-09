@@ -18,13 +18,7 @@ paths:
       summary: Find user by ID
       description: Returns user based on ID
       parameters:
-        - name: userId
-          in: path
-          description: ID of the user to use
-          required: true
-          schema:
-            type: integer
-            format: int32
+        - $ref: 'components.yaml#/components/parameters/userId'
       responses:
         '200':
           description: Returns user for the provided ID
